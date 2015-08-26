@@ -2,3 +2,8 @@
 margin-top:20px;
 width:100%;
 }
+
+#graphTable tr:hover {
+    background-color: #ccc;
+}
+.scrolltable { height: 350px; overflow: auto; }

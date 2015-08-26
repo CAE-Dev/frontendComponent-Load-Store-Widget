@@ -92,12 +92,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   <!-- container for actual page content -->
   <div class="container" id="main-content">
-  
-    <button id='storeButton' class="btn btn-default">storeButton</button>
-    <CUSTOM id='graphTable'></CUSTOM>
-    <button id='newButton' class="btn btn-default">newButton</button>
-    <input id='descriptionInput'></input>
-  
+
+    <div class="scrolltable">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id='graphTable'></tbody>
+      </table>
+    </div>
+    <br>
+    <div class="col-lg-6">
+        <div class="input-group">
+          <input id ="descriptionInput" type="text" class="form-control" placeholder="Description">
+          <span class="input-group-btn">
+            <button id = "storeButton" class="btn btn-default" type="button">Store</button>
+          </span>
+        </div>
+        <br><button id = "newButton" class="btn btn-default" type="button">New</button>
+      </div>
+    </div>  
+
   </div>
 
 </body>

@@ -32,6 +32,9 @@
 
 var client;
 
+// global variable stores the current graph id
+var currentGraphId = -1; // -1 means "new/unsaved"
+
 var init = function() {
   
   var iwcCallback = function(intent) {
@@ -48,10 +51,6 @@ var init = function() {
   $('#storeButton').on('click', function() {
     sendStoreGraphIntent();
   })
-  $('#graphTable').on('click', function() {
-    var id = null;
-    loadGraph(id);
-  })
   $('#newButton').on('click', function() {
     sendLoadEmptyGraph();
   })
@@ -62,27 +61,45 @@ var init = function() {
 var getGraphs = function(){
   client.sendRequest("GET", "", "", "", {},
   function(data, type) {
-    console.log(data);
+    // add table rows
+    var graphDetails = [];
+    $.each(data, function(index, value) {
+      graphDetails.push("<tr><td>" + value.graphId + "</td><td>"
+        + value.description + "</td></tr>");
+    });
+    // update element
+    $("#graphTable").html(graphDetails);
+    // make table rows "clickable" (event)
+    $("#graphTable").find("tr").click(function() {
+      // get the id
+      var id = $(this).find("td").get(0).innerHTML;
+      loadGraph(id);
+    });
   },
   function(error) {
     console.log(error);
   });
-$("#graphTable").html("Upated Element");
 }
 
 
 // loadGraph
 var loadGraph = function(id){
-  client.sendRequest("GET", "/id", "", "", {},
+  client.sendRequest("GET", id, "", "", {},
   function(data, type) {
-    console.log(data);
+    // store id and update the description input field
+    currentGraphId = parseInt(data.graphId);
+    $('#descriptionInput').val(data.description);
+    var graph = {
+      "nodes": data.nodes,
+      "links": data.links
+    };
+    // send intent (IWC call)
+    graph = JSON.stringify(graph);
+    client.sendIntent("LOAD_GRAPH", graph);
   },
   function(error) {
     console.log(error);
   });
-$("#descriptionInput").html("Upated Element");
-  var graph = "initialized";
-  client.sendIntent("LOAD_GRAPH", graph);
 }
 
 
@@ -95,10 +112,16 @@ var sendStoreGraphIntent = function(){
 
 // storeGraph
 var storeGraph = function(graph){
-  var graph = null;
+  graph = $.parseJSON(graph);
+  graph.graphId = currentGraphId;
+  graph.description = $('#descriptionInput').val();
+  graph = JSON.stringify(graph);
   client.sendRequest("POST", "", graph, "application/json", {},
   function(data, type) {
-    console.log(data);
+    // update current graph id (in case that a new graph was stored)
+    currentGraphId = parseInt(data);
+    // update list
+    getGraphs();
   },
   function(error) {
     console.log(error);
@@ -108,11 +131,19 @@ var storeGraph = function(graph){
 
 // sendLoadEmptyGraph
 var sendLoadEmptyGraph = function(){
-  var graph = "initialized";
+  // construct empty graph
+  currentGraphId = -1;
+  $('#descriptionInput').val("");
+  var graph = {
+    "nodes": "[]",
+    "links": "[]"
+  };
+  graph = JSON.stringify(graph);
   client.sendIntent("LOAD_GRAPH", graph);
 }
 
 
 $(document).ready(function() {
   init();
+  getGraphs(); // call getGraphs at startup
 });
